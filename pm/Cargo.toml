@@ -1,0 +1,24 @@
+[package]
+name = "pm"
+version = "0.1.0"
+authors = ["mason"]
+edition = "2018"
+
+[lib]
+name = "pm"
+path = "src/lib.rs"
+
+[[bin]]
+name = "pm"
+path = "src/main.rs"
+
+[dependencies]
+clipboard = "0.5.0"
+im = { version = "*", features = [ "serde" ] }
+serde = "1.0"
+serde_derive = "1.0"
+serde_json = "1.0"
+structopt = "0.2"
+
+[dev-dependencies]
+mktemp = "0.3.1"
