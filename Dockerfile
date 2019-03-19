@@ -1,4 +1,4 @@
-FROM rust:1.31.1-stretch as build
+FROM rust:1.33.0-stretch as build
 RUN apt update && apt install -y \
         curl \
         build-essential \
