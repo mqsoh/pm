@@ -29,6 +29,8 @@ enum Command {
     Delete { entry: String },
     #[structopt(name = "clip")]
     Clip { entry: String },
+    #[structopt(name = "print")]
+    Print { entry: String },
 }
 
 pub fn run() {
@@ -141,6 +143,27 @@ pub fn run() {
                                     clip(&mut stdin().lock(), &mut stdout().lock(), entries, name);
                                     println!("The password will be deleted out of your clipboard in 10 seconds.");
                                     thread::sleep(time::Duration::from_secs(10));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        Command::Print { entry: entry_name } => {
+            match entries.get(&entry_name) {
+                Some(x) => {
+                    println!("{}", x.password);
+                },
+                None => {
+                    match entry_name.parse::<usize>() {
+                        Err(_) => eprintln!("There's no entry by that name or index."),
+                        Ok(index) => {
+                            match entries.clone().keys().nth(index - 1) {
+                                None => eprintln!("There's no entry at that index."),
+                                Some(name) => {
+                                    let x = entries.get(name).unwrap();
+                                    println!("{}", x.password);
                                 }
                             }
                         }
