@@ -11,6 +11,9 @@ pub trait EntriesStuff {
     fn serialize(&self) -> String;
     // Serializes and writes a file.
     fn save(&self, filename: &std::path::PathBuf) -> std::io::Result<()>;
+
+    // Gets an entry by its name or index.
+    fn getish(&self, name_or_index: &str) -> Result<Entry, String>;
 }
 
 impl EntriesStuff for Entries {
@@ -32,6 +35,21 @@ impl EntriesStuff for Entries {
         let string = std::str::from_utf8(bytes)
             .expect("Failed casting from bytes to a string. I'm not sure I need to do this, even, but I wanted to keep going after I got it to work.");
         Self::deserialize(string)
+    }
+
+    fn getish(&self, name_or_index: &str) -> Result<Entry, String> {
+        match name_or_index.parse::<usize>() {
+            Ok(index) => match self.clone().keys().nth(index - 1) {
+                None => Err(String::from("No entry at that index.")),
+                Some(name) => Ok(self.get(name).unwrap().clone()),
+            },
+            Err(_) => {
+                match self.get(name_or_index) {
+                    None => Err(String::from("No entry by that name.")),
+                    Some(entry) => Ok(entry.clone()),
+                }
+            }
+        }
     }
 }
 
@@ -129,5 +147,25 @@ mod tests {
 
         let loaded = Entries::load(&filename);
         assert_eq!(original, loaded);
+    }
+
+    #[test]
+    fn entries_getish() {
+        let entries = Entries::new().update(S("first"), Entry{
+            name: S("First"),
+            username: S("First Username"),
+            password: S("First Password"),
+            notes: S("First Notes"),
+        }).update(S("second"), Entry{
+            name: S("Second"),
+            username: S("Second Username"),
+            password: S("Second Password"),
+            notes: S("Second Notes"),
+        });
+
+        assert_eq!(S("First"), entries.getish("1").unwrap().name);
+        assert_eq!(S("First"), entries.getish("first").unwrap().name);
+        assert_eq!(S("Second"), entries.getish("2").unwrap().name);
+        assert_eq!(S("Second"), entries.getish("second").unwrap().name);
     }
 }

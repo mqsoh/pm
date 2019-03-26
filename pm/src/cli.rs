@@ -47,128 +47,43 @@ pub fn run() {
                 .expect("Error saving.");
         },
         Command::Show { entry: entry_name } => {
-            match entries.get(&entry_name) {
-                Some(_entry) => {
-                    show(&mut stdin().lock(), &mut stdout().lock(), entries, &entry_name)
-                        .save(&opts.filename)
-                        .expect("Error saving.");
-                },
-                None => {
-                    match entry_name.parse::<usize>() {
-                        Err(_) => eprintln!("There's no entry by that name or index."),
-                        Ok(index) => {
-                            match entries.clone().keys().nth(index - 1) {
-                                None => eprintln!("There's no entry at that index."),
-                                Some(name) => {
-                                    show(&mut stdin().lock(), &mut stdout().lock(), entries, name)
-                                        .save(&opts.filename)
-                                        .expect("Error saving.");
-                                }
-                            }
-                        }
-                    }
-                }
+            match entries.getish(&entry_name) {
+                Err(e) => eprintln!("{}", e),
+                Ok(entry) => show(&mut stdin().lock(), &mut stdout().lock(), entries, &entry.name)
+                    .save(&opts.filename)
+                    .expect("Error saving."),
             }
         },
         Command::Edit { entry: entry_name } => {
-            match entries.get(&entry_name) {
-                // The entry given was a name that's in the map.
-                Some(_entry) => {
-                    edit(&mut stdin().lock(), &mut stdout().lock(), entries, &entry_name)
-                        .save(&opts.filename)
-                        .expect("Error saving.");
-                },
-                // Maybe it was a number from the list.
-                None => {
-                    match entry_name.parse::<usize>() {
-                        Err(_) => eprintln!("There's no entry by that name or index."),
-                        Ok(index) => {
-                            // -1 because when we print them they're one-based.
-                            // Also, the clone is fine (I think) because of
-                            // using the immutable data structures.
-                            match entries.clone().keys().nth(index - 1) {
-                                None => eprintln!("There's no entry at that index."),
-                                Some(name) => {
-                                    // Unwrap is safe because the entry must be
-                                    // there because I got the name from
-                                    // enumerating the entries.
-                                    edit(&mut stdin().lock(), &mut stdout().lock(), entries, name)
-                                        .save(&opts.filename)
-                                        .expect("Error saving.");
-                                }
-                            }
-                        }
-                    }
-                }
+            match entries.getish(&entry_name) {
+                Err(e) => eprintln!("{}", e),
+                Ok(entry) => edit(&mut stdin().lock(), &mut stdout().lock(), entries, &entry.name)
+                    .save(&opts.filename)
+                    .expect("Error saving."),
             }
         },
         Command::Delete { entry: entry_name } => {
-            match entries.get(&entry_name) {
-                Some(_entry) => {
-                    delete(&mut stdin().lock(), &mut stdout().lock(), entries, &entry_name)
-                        .save(&opts.filename)
-                        .expect("Error saving.");
-                },
-                None => {
-                    match entry_name.parse::<usize>() {
-                        Err(_) => eprintln!("There's no entry by that name or index."),
-                        Ok(index) => {
-                            match entries.clone().keys().nth(index - 1) {
-                                None => eprintln!("There's no entry at that index."),
-                                Some(name) => {
-                                    delete(&mut stdin().lock(), &mut stdout().lock(), entries, name)
-                                        .save(&opts.filename)
-                                        .expect("Error saving.");
-                                }
-                            }
-                        }
-                    }
-                }
+            match entries.getish(&entry_name) {
+                Err(e) => eprintln!("{}", e),
+                Ok(entry) => delete(&mut stdin().lock(), &mut stdout().lock(), entries, &entry.name)
+                    .save(&opts.filename)
+                    .expect("Error saving."),
             }
         },
         Command::Clip { entry: entry_name } => {
-            match entries.get(&entry_name) {
-                Some(_entry) => {
-                    clip(&mut stdin().lock(), &mut stdout().lock(), entries, &entry_name);
+            match entries.getish(&entry_name) {
+                Err(e) => eprintln!("{}", e),
+                Ok(entry) => {
+                    clip(&mut stdin().lock(), &mut stdout().lock(), entries, &entry.name);
                     println!("The password will be deleted out of your clipboard in 10 seconds.");
                     thread::sleep(time::Duration::from_secs(10));
                 },
-                None => {
-                    match entry_name.parse::<usize>() {
-                        Err(_) => eprintln!("There's no entry by that name or index."),
-                        Ok(index) => {
-                            match entries.clone().keys().nth(index - 1) {
-                                None => eprintln!("There's no entry at that index."),
-                                Some(name) => {
-                                    clip(&mut stdin().lock(), &mut stdout().lock(), entries, name);
-                                    println!("The password will be deleted out of your clipboard in 10 seconds.");
-                                    thread::sleep(time::Duration::from_secs(10));
-                                }
-                            }
-                        }
-                    }
-                }
             }
         },
         Command::Print { entry: entry_name } => {
-            match entries.get(&entry_name) {
-                Some(x) => {
-                    println!("{}", x.password);
-                },
-                None => {
-                    match entry_name.parse::<usize>() {
-                        Err(_) => eprintln!("There's no entry by that name or index."),
-                        Ok(index) => {
-                            match entries.clone().keys().nth(index - 1) {
-                                None => eprintln!("There's no entry at that index."),
-                                Some(name) => {
-                                    let x = entries.get(name).unwrap();
-                                    println!("{}", x.password);
-                                }
-                            }
-                        }
-                    }
-                }
+            match entries.getish(&entry_name) {
+                Err(e) => eprintln!("{}", e),
+                Ok(entry) => println!("{}", entry.password),
             }
         },
     }
