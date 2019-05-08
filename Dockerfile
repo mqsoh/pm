@@ -15,3 +15,4 @@ RUN apt update && apt install -y xorg-dev \
     mkdir -p /root/.cargo && \
     ln -sf /usr/bin /root/.cargo
 COPY --from=build /workdir/target/release/pm /bin/pm
+WORKDIR /workdir
